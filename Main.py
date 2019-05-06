@@ -12,10 +12,10 @@ last modified: May 2018
 
 import wx
 import random
+Speed = 300
 
 
 class Tetris(wx.Frame):
-    speed = 300
 
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, size=(180, 380),
@@ -24,16 +24,11 @@ class Tetris(wx.Frame):
         self.initFrame()
 
     def initFrame(self):
-        self.statusbar = self.CreateStatusBar()
-        self.statusbar.SetStatusText('0')
-        self.board = Board(self,myspeed=Tetris.speed)
-        self.board.SetFocus()
-        self.board.start()
 
         self.menubar = wx.MenuBar()
         self.menu_file = wx.Menu()
-        self.menu_file.Append(301,"Start a new game")
-        self.menu_file.Append("QUIT")
+        self.menu_file.Append(301, "Start a new game")
+        self.menu_file.Append(302, "QUIT")
         self.menubar.Append(self.menu_file, "File")
         self.mode_game = wx.Menu()
         self.mode_game.Append(401,"Easy")
@@ -42,18 +37,23 @@ class Tetris(wx.Frame):
         self.menubar.Append(self.mode_game, "GameMode")
         self.Bind(wx.EVT_MENU, self.Handler_Menu)
         self.SetMenuBar(self.menubar)
-
+        self.statusbar = self.CreateStatusBar()
+        self.statusbar.SetStatusText('0')
+        self.board = Board(self)
+        self.board.SetFocus()
+        self.board.start()
         self.SetTitle("Tetris")
         self.Centre()
 
     def Handler_Menu(self,evt):
         id = evt.GetId()
+        global Speed
         if id == 401:
-            Tetris.speed = 300
+            Speed = 300
             self.Destroy()
             Tetris(None)
         elif id == 403:
-            Tetris.speed = 100
+            Speed = 100
             self.Destroy()
             Tetris(None)
 
@@ -61,7 +61,7 @@ class Tetris(wx.Frame):
 class Board(wx.Panel):
     BoardWidth = 10
     BoardHeight = 22
-    Speed = 300
+    global Speed
     ID_TIMER = 1
 
     def __init__(self, myspeed):
