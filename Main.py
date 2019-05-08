@@ -1,7 +1,5 @@
 import wx
 import random
-import os
-import sys
 
 SPEED = 300
 selectDifficulty = 101
@@ -451,7 +449,6 @@ class Shape(object):
 
 
 if __name__ == '__main__':
-    os.chdir(os.path.abspath(sys.path[0]))
     app = wx.App()
     Tetris(None, title='Tetris(Easy)')
     app.MainLoop()
