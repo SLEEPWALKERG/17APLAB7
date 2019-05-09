@@ -4,6 +4,34 @@ import random
 SPEED = 300
 selectDifficulty = 101
 
+pause = ord('P')
+left = wx.WXK_LEFT
+right = wx.WXK_RIGHT
+down = wx.WXK_DOWN
+up = wx.WXK_UP
+space = wx.WXK_SPACE
+fast = ord('D')
+
+class MyModeDlg(wx.Dialog):
+    def __init__(self, parent):
+        wx.Dialog.__init__(self, parent, -1, "复选显示位图选择", size=(400, 300))
+        panel = wx.Panel(self)
+        wx.Button(panel, wx.ID_OK, "确定", size=(80, 30), pos=(200, 50)).SetDefault()
+        wx.Button(panel, wx.ID_CANCEL, "取消", size=(80, 30), pos=(200, 150))
+        self.Bind(wx.EVT_CHECKBOX, self.Handle_CheckBox)
+        self.Bind(wx.EVT_BUTTON, self.Handle_Button)
+
+    def Handle_CheckBox(self, evt):
+        id = evt.GetId()
+
+    def Handle_Button(self, evt):
+        id = evt.GetId()
+        if id == wx.ID_OK:
+            self.GetParent().Refresh()
+            self.Destroy()
+        else:
+            self.Destroy()
+
 
 class Tetris(wx.Frame):
 
@@ -16,14 +44,16 @@ class Tetris(wx.Frame):
         self.menuBar = wx.MenuBar()
 
         self.menu1 = wx.Menu()
+        self.menu1.Append(501, "Key Binding(&k)\tF2")
+        self.Bind(wx.EVT_MENU, self.onbinding, id=501)
+        self.menu1.Append(502, "Restart(&R)\tAlt+R")
+        self.Bind(wx.EVT_MENU, self.OnRestart, id=502)
+        self.menu1.Append(503, "Time Used(Have to pause the game)")
+        self.Bind(wx.EVT_MENU, self.OnCostTime, id=503)
         self.menu1.Append(wx.ID_EXIT, "Exit(&X)")
         self.Bind(wx.EVT_MENU, self.OnClose, id=wx.ID_EXIT)
-        self.menu1.Append(501, "Restart(&R)\tAlt+R")
-        self.Bind(wx.EVT_MENU, self.OnRestart, id=501)
-        self.menu1.Append(502, "Time Used(Have to pause the game)")
-        self.Bind(wx.EVT_MENU, self.OnCostTime, id=502)
         self.menuBar.Append(self.menu1, "File(&F)")
-        self.menuBar.Enable(502, False)
+        self.menuBar.Enable(503, False)
 
         self.menu2 = wx.Menu()
         self.menu2.Append(101, "Easy\tCtrl+1", "", wx.ITEM_RADIO)
@@ -47,6 +77,12 @@ class Tetris(wx.Frame):
         self.board.start()
         self.Centre()
         self.Show(True)
+
+    def onbinding(self, evt):
+        self.board.pause()
+        MyModeDlg(self).ShowModal()
+        self.board.pause()
+
 
     def OnDifficulty(self, evt):
         number = evt.GetId()
@@ -189,27 +225,27 @@ class Board(wx.Panel):
                                 self.curPiece.shape())
 
     def OnKeyDown(self, event):
-
         if not self.isStarted or self.curPiece.shape() == Tetrominoes.NoShape:
             event.Skip()
             return
         keycode = event.GetKeyCode()
-        if keycode == ord('P') or keycode == ord('p'):
+        if keycode == pause:# or keycode == ord('p'):
+            print(keycode)
             self.pause()
             return
         if self.isPaused:
             return
-        elif keycode == wx.WXK_LEFT:
+        elif keycode == left:
             self.tryMove(self.curPiece, self.curX - 1, self.curY)
-        elif keycode == wx.WXK_RIGHT:
+        elif keycode == right:
             self.tryMove(self.curPiece, self.curX + 1, self.curY)
-        elif keycode == wx.WXK_DOWN:
+        elif keycode == down:
             self.tryMove(self.curPiece.rotatedRight(), self.curX, self.curY)
-        elif keycode == wx.WXK_UP:
+        elif keycode == up:
             self.tryMove(self.curPiece.rotatedLeft(), self.curX, self.curY)
-        elif keycode == wx.WXK_SPACE:
+        elif keycode == space:
             self.dropDown()
-        elif keycode == ord('D') or keycode == ord('d'):
+        elif keycode == fast:
             self.oneLineDown()
         else:
             event.Skip()
