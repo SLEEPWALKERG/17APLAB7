@@ -1,3 +1,5 @@
+from threading import Thread
+
 import wx
 import random
 
@@ -12,25 +14,45 @@ up = wx.WXK_UP
 space = wx.WXK_SPACE
 fast = ord('D')
 
+
+def myasync(func):
+    def wrapper(*args, **kwargs):
+        thr = Thread(target=func, args=args, kwargs=kwargs)
+        thr.start()
+    return wrapper
+
 class MyModeDlg(wx.Dialog):
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, -1, "复选显示位图选择", size=(400, 300))
         panel = wx.Panel(self)
         wx.Button(panel, wx.ID_OK, "确定", size=(80, 30), pos=(200, 50)).SetDefault()
         wx.Button(panel, wx.ID_CANCEL, "取消", size=(80, 30), pos=(200, 150))
-        self.Bind(wx.EVT_CHECKBOX, self.Handle_CheckBox)
+        self.p = wx.Button(panel, 801, "Pause:   " + chr(pause),size=(120,30),pos=(50,20))
+        self.l = wx.Button(panel, 802, "Left:   " + chr(pause), size=(120, 30), pos=(50, 50))
+        self.r = wx.Button(panel, 803, "Right:   " + chr(pause), size=(120, 30), pos=(50, 80))
+        self.whirl_1 = wx.Button(panel, 804, "Whirl_1:   " + chr(pause), size=(120, 30), pos=(50, 110))
+        self.whirl_2 = wx.Button(panel, 805, "Whirl_2:   " + chr(pause), size=(120, 30), pos=(50, 140))
+        self.fall = wx.Button(panel, 806, "Fall:   " + chr(pause), size=(120, 30), pos=(50, 170))
+        self.accelerate = wx.Button(panel, 807, "Accelerate:   " + chr(pause), size=(120, 30), pos=(50, 200))
         self.Bind(wx.EVT_BUTTON, self.Handle_Button)
-
-    def Handle_CheckBox(self, evt):
-        id = evt.GetId()
+        self.Bind(wx.EVT_KEY_DOWN, self.Handle_Key)
 
     def Handle_Button(self, evt):
         id = evt.GetId()
         if id == wx.ID_OK:
             self.GetParent().Refresh()
             self.Destroy()
-        else:
+        elif id == wx.ID_CANCEL:
             self.Destroy()
+        elif id == 801:
+            self.p.SetLabel("Pause:")
+
+    @myasync
+    def Handle_Key(self, event):
+        keycode = event.GetKeyCode()
+        print(keycode)
+
+
 
 
 class Tetris(wx.Frame):
@@ -38,8 +60,8 @@ class Tetris(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title, size=(300, 600))
 
-        self.icon = wx.Icon(name="icon.ico", type=wx.BITMAP_TYPE_ICO)
-        self.SetIcon(self.icon)
+        '''self.icon = wx.Icon(name="icon.ico", type=wx.BITMAP_TYPE_ICO)
+        self.SetIcon(self.icon)'''
 
         self.menuBar = wx.MenuBar()
 
@@ -79,7 +101,8 @@ class Tetris(wx.Frame):
         self.Show(True)
 
     def onbinding(self, evt):
-        self.board.pause()
+        if not self.board.isPaused:
+            self.board.pause()
         MyModeDlg(self).ShowModal()
         self.board.pause()
 
@@ -230,7 +253,7 @@ class Board(wx.Panel):
             return
         keycode = event.GetKeyCode()
         if keycode == pause:# or keycode == ord('p'):
-            print(keycode)
+            #print(keycode)
             self.pause()
             return
         if self.isPaused:
